@@ -1,7 +1,7 @@
 import os
 import json
-from ast import literal_eval
 import requests
+from requests.exceptions import HTTPError
 
 BASE_URL = "https://api.coingecko.com/api/v3/"
 ENDPOINTS = {"market_chart": "coins/{id}/market_chart",
@@ -10,14 +10,8 @@ ENDPOINTS = {"market_chart": "coins/{id}/market_chart",
 QUERY_PARAMS = {"ids": "{ids}",
                 "vs_currencies": "{vs_currencies}"}
 
-def format_url(base_url, endpoint, query_params):
-    url = base_url + endpoint + "?"
-    url += "&".join([f"{key}={value}" for key, value in query_params.items()])
-    return url
-
 def generate_coingecko_url():
     base_url = "https://api.coingecko.com/api/v3/"
-
     action = input("Enter the action (e.g., market_chart, current_price): ")
 
     if action == "market_chart":
@@ -44,10 +38,21 @@ def generate_coingecko_url():
     url += "&".join([f"{key}={value}" for key, value in query_params.items()])
     return url
 
+def send_request(url):
+    try:
+        response = requests.get(url)
+        content = response.content
+    except HTTPError as e:
+        print(e)
+        print(f'Status code: {e.response.status_code}')
+    return content
+
+def decode_content(content):
+    content_decode = content.decode('utf-8')
+    content_dict = json.loads(content_decode)
+    return content_dict
+
 if __name__ == "__main__":
-
-
-
 
     # endpoint = "search/trending"
     # response = requests.get(os.path.join(base_path, endpoint))
